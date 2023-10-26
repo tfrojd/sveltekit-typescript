@@ -50,10 +50,47 @@
 
   // Start with FDR, because he's good.
   conn_prom.then(() => get_year(1936))
+
+    // T - Adding fileupload, 
+    let files;
+
+let fileContent = '';
+
+const handleFileUpload = () => {
+  const file = files[0];
+
+  if (!file) {
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = (e) => {
+    fileContent = e.target.result;
+    // Use the content of the file here
+    console.log(fileContent);
+  };
+
+  reader.readAsText(file);
+};
+
 </script>
 
 
 <h1>Duck DB Svelte-kit demo</h1>
+
+<h2>Upload a csv file:</h2>
+<input accept=".csv" bind:files id="avatar" name="avatar" type="file" on:change={handleFileUpload} />
+
+{#if files}
+<h2>File selected:</h2>
+<p>{files[0].name} ({files[0].size} bytes)</p> 
+<p>{fileContent}</p>
+
+
+
+{/if}
+
 
 <div class="description">
   This is a demo of a static, database-driven page using duckdb WASM.
