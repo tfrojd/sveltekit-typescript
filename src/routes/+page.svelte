@@ -4,10 +4,13 @@
   import Spinner from '$lib/components/Spinner.svelte'
   export let data;
   import { base } from '$app/paths';
+  
+  const db = await initDB();
+  
   async function load_db() {
     console.log("LOADING DB")
     // A simple case of a db of a single parquet file.
-    const db = await initDB();
+    //const db = await initDB();
     await db.registerFileURL('SOTU.parquet', `${base}/SOTU.parquet`, 4, false);
     const conn = await db.connect();
 
@@ -37,6 +40,7 @@
 
 
   $: results = new Promise(() => {})
+
 
   async function get_year(y) {
 //    year = y;
@@ -68,11 +72,45 @@ const handleFileUpload = () => {
   reader.onload = (e) => {
     fileContent = e.target.result;
     // Use the content of the file here
-    console.log(fileContent);
+    //console.log(fileContent);
+
+    // insert into database
+    console.log("INSERT CSV")
+    insertCSV(fileContent).catch((err) => {
+      console.error('Error inserting CSV file into DuckDB: ', err);
+    });
   };
 
   reader.readAsText(file);
 };
+
+
+
+async function insertCSV(csv_data) {
+    
+    const data = csv_data;
+
+    const conn = await conn_prom;
+
+    await db.registerFileText(`data.csv`, data);
+
+    await db.insertCSVFromPath( 'data.csv', {
+        schema: 'main',
+        name: 'foo',
+        detect: true,
+        header: true
+
+    });
+
+
+    console.log('CSV file inserted into DuckDB successfully.');
+}
+
+
+
+
+
+
 
 </script>
 
